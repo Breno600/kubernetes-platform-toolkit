@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: toolkit-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: toolkit-demo
+  template:
+    metadata:
+      labels:
+        app: toolkit-demo
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: server
+          image: registry.k8s.io/e2e-test-images/agnhost:2.53
+          args: [netexec, --http-port=8080]
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /hostname
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /hostname
+              port: http
+            initialDelaySeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
